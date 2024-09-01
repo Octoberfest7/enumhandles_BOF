@@ -1,0 +1,52 @@
+alias enumhandles
+{
+    local('$bid $barch $args $exebytes $reportbytes $process');
+
+    if (size(@_) != 2)
+    {
+        berror($1, "Incorrect usage!");
+        berror($1, beacon_command_detail("enumhandles"));
+        return;
+    }
+
+    $bid = $1;
+    $barch  = barch($1);
+    $process = $2;
+
+    # read in the right BOF file
+    $handle = openf(script_resource("handle_finder. $+ $barch $+ .o"));
+    $data   = readb($handle, -1);
+    closef($handle);
+
+    # Pack the arguments
+    $args = bof_pack($bid, "z", $process);
+
+    # Announce what we are doing
+    blog($bid, "Enumerating open handles for " . $process);
+
+    # Execute BOF
+    beacon_inline_execute($bid, $data, "go", $args);
+}
+
+
+beacon_command_register(
+    "enumhandles",
+    "Identify processes that have an open handle to a file on disk",
+	"
+Command: enumhandles
+Summary: This BOF will identify all processes that hold a handle to
+         the specified file on disk. This can be useful to identify
+         processes that are locking a file on disk.
+         
+Usage:   enumhandles <path\\to\\file> 
+
+	        path\\to\\file          - The full path of the file on disk you wish to query.
+
+Example:
+         enumhandles C:\\Windows\\explorer.exe
+         enumhandles \"C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe\"
+
+Note:   - This BOF can experience problems when enumerating handles to x64 images 
+            from an x86 Beacon (e.g. enumhandles c:\\windows\\sysnative\\svchost.exe)
+"
+); 
