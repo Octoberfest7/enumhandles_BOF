@@ -1,6 +1,6 @@
 alias enumhandles
 {
-    local('$bid $barch $args $exebytes $reportbytes $process');
+    local('$bid $barch $args $process');
 
     if (size(@_) != 2)
     {
